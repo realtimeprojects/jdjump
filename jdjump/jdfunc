@@ -1,0 +1,3 @@
+function jd {
+    $(_jd $*);
+}
