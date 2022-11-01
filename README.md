@@ -31,16 +31,20 @@ given pattern in the command line.
 
 ## Documentation
 
+### Jump to directory
+
+`gh <target>` will jump to the first directory in the jump list matching
+the `<target>` pattern.
+
 ### Adding files to your jumplist
 
-`gh -a <target>` will add the given directory to your jump list. If target is ommitted,
+`gh -a <directory>` will add the given directory to your jump list. If target is ommitted,
 the current working directory is added to your match list.
-
-Alternatively you can use `gh -l` to show the jump list.
 
 ### Show jump list
 
 Running `gh` without a target will print out the jump list.
+Alternatively you can use `gh -l` to show the jump list.
 
 ### Multi-matching
 
