@@ -28,3 +28,38 @@ Quickly jump between your bookmarked directories using the jd command.
 
 `jd` will jump to the first directory in the jumplist which matches the
 given pattern in the command line.
+
+## Documentation
+
+### Adding files to your jumplist
+
+`gh -a <target>` will add the given directory to your jump list. If target is ommitted,
+the current working directory is added to your match list.
+
+Alternatively you can use `gh -l` to show the jump list.
+
+### Show jump list
+
+Running `gh` without a target will print out the jump list.
+
+### Multi-matching
+
+Given you have multiple similar entries in your jump-list like:
+
+        ~/greenhouse/greenhouse-test
+        ~/greenhouse/greenhouse-lib
+        ~/acre/acre-test
+        ~/acre/acre-lib
+
+If you jump using
+
+    jd test
+
+jd will jump to the first entry in your jumplist that matches the pattern. However,
+you can separate multiple matches using the `/` sign:
+
+    jd ac/te
+
+will jump to the first entry matching all parts in your search pattern. In this case
+jd will jump to `~/acre/acre-test`.
+

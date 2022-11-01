@@ -3,6 +3,7 @@ import os
 import sys
 import logging as log
 import argparse
+import subprocess
 from pathlib import Path
 
 _jd_dir = os.path.expanduser("~/.jdjump")
@@ -14,6 +15,7 @@ parser = argparse.ArgumentParser(description="jd - a simple directory jumper")
 parser.add_argument('--debug', action="store_true", help="enable debug mode")
 parser.add_argument('--add', '-a', action="store_true", help="add current directory to quick jump list")
 parser.add_argument('--ls', '-l', action="store_true", help="show quick jump list")
+parser.add_argument('--edit', '-e', action="store_true", help="edit jump list in your favourite editor")
 parser.add_argument('target', nargs="?", default=None)
 
 
@@ -37,8 +39,9 @@ class Commands:
             return
 
         targets = _read_targets()
+        tgtlist = myargs.target.split("/")
         for target in targets:
-            if re.search(myargs.target, target):
+            if _target_matches(target, tgtlist):
                 log.info(f"jumping to: {target}")
                 print(f"cd {target}")
                 return
@@ -50,6 +53,14 @@ class Commands:
         fp = open(_jd_file, "a")
         fp.write(f"{pth}\n")
         fp.close()
+        return 0
+
+    @staticmethod
+    def edit(myargs):
+        if 'EDITOR' not in os.environ:
+            log.error("set EDITOR in environment in order to edit your jumplist with `jd -e`")
+            return 1
+        os.system(f"{os.environ.get('EDITOR')} {_jd_file} </dev/tty >/dev/tty 2>&1")
 
 
 def main():
@@ -60,8 +71,10 @@ def main():
         command = "add"
     if myargs.ls:
         command = "ls"
+    if myargs.edit:
+        command = "edit"
     func = getattr(Commands, command)
-    func(myargs)
+    return func(myargs)
 
 
 def _read_targets():
@@ -130,5 +143,13 @@ def _ask(question):
     exit(1)
 
 
+def _target_matches(target, matchlist):
+    for tgt in matchlist:
+        if not re.search(tgt, target):
+            return False
+    return True
+
+
 if __name__ == "__main__":
-    main()
+    ec = main()
+    sys.exit(ec)
