@@ -33,18 +33,23 @@ given pattern in the command line.
 
 ### Jump to directory
 
-`gh <target>` will jump to the first directory in the jump list matching
+`jd <target>` will jump to the first directory in the jump list matching
 the `<target>` pattern.
+
+### Jumping back
+
+`jd -` will jump back to the last directory and is just a substitution for
+`cd -`.
 
 ### Adding files to your jumplist
 
-`gh -a <directory>` will add the given directory to your jump list. If target is ommitted,
+`jd -a <directory>` will add the given directory to your jump list. If target is ommitted,
 the current working directory is added to your match list.
 
 ### Show jump list
 
-Running `gh` without a target will print out the jump list.
-Alternatively you can use `gh -l` to show the jump list.
+Running `jd` without a target will print out the jump list.
+Alternatively you can use `jd -l` to show the jump list.
 
 ### Multi-matching
 
