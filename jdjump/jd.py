@@ -3,10 +3,9 @@ import os
 import sys
 import logging as log
 import argparse
-import subprocess
 from pathlib import Path
 
-_jd_dir = os.path.expanduser("~/.jdjump")
+_jd_dir = os.path.expanduser(os.environ.get('JDPATH', "~/.jdjump"))
 _jd_file = os.path.join(_jd_dir, "jumplist")
 
 _sourcejd = f"source {os.path.dirname(__file__)}/jdfunc"
@@ -36,7 +35,7 @@ class Commands:
 
         if myargs.target == "-":
             print("cd -")
-            return
+            return 0
 
         targets = _read_targets()
         tgtlist = myargs.target.split("/")
@@ -44,7 +43,9 @@ class Commands:
             if _target_matches(target, tgtlist):
                 log.info(f"jumping to: {target}")
                 print(f"cd {target}")
-                return
+                return 0
+        log.error(f"no match found for {target}")
+        return 1
 
     @staticmethod
     def add(myargs):
@@ -98,7 +99,7 @@ def _setup(myargs):
 def _check_jddir():
     if not os.path.exists(_jd_dir):
         log.info(f"creating {_jd_dir} directory")
-        os.mkdir(_jd_dir)
+        os.makedirs(_jd_dir)
     if not os.path.exists(_jd_file):
         Path(_jd_file).touch()
 
