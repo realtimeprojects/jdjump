@@ -3,11 +3,8 @@ import os
 import sys
 import logging as log
 import argparse
-import subprocess
-from pathlib import Path
 
 _jd_dir = os.path.expanduser("~/.jdjump")
-_jd_file = os.path.join(_jd_dir, "jumplist")
 
 _sourcejd = f"source {os.path.dirname(__file__)}/jdfunc"
 
@@ -20,67 +17,82 @@ parser.add_argument('target', nargs="?", default=None)
 
 
 class Commands:
-    @staticmethod
-    def ls(myargs):
-        targets = _read_targets()
+    def __init__(self, args):
+        self.args = args
+
+    def ls(self):
+        targets = self._read_targets()
         if len(targets) == 0:
-            log.info(f"jumplist is empty ({_jd_file})")
+            log.info(f"jumplist is empty ({self._jumplist()})")
+            log.info("add entries to jumplist by:")
+            log.info("\tjd -a <path>")
             return 0
         log.info("\n".join(targets))
 
-    @staticmethod
-    def jump(myargs):
-        log.debug(f'target is "{myargs.target}"')
-        if not myargs.target:
-            return Commands.ls(myargs)
+    def jump(self):
+        log.debug(f'target is "{self.args.target}"')
+        if not self.args.target:
+            return self.ls()
 
-        if myargs.target == "-":
+        if self.args.target == "-":
             print("cd -")
             return
 
-        targets = _read_targets()
-        tgtlist = myargs.target.split("/")
+        targets = self._read_targets()
+        tgtlist = self.args.target.split("/")
         for target in targets:
             if _target_matches(target, tgtlist):
                 log.info(f"jumping to: {target}")
                 print(f"cd {target}")
                 return
 
-    @staticmethod
-    def add(myargs):
-        pth = myargs.target if myargs.target else os.getcwd()
-        log.info(f"adding '{pth}' to jumplist: '{_jd_file}'")
-        fp = open(_jd_file, "a")
+    def add(self):
+        pth = self.args.target if self.args.target else os.getcwd()
+        log.info(f"adding '{pth}' to jumplist: '{self._jd_file()}'")
+        fp = open(self._jumplist(), "a")
+        if not fp:
+            log.error(f"could not open {self._jumplist()} for writing")
+            return 1
         fp.write(f"{pth}\n")
         fp.close()
         return 0
 
-    @staticmethod
-    def edit(myargs):
+    def edit(self):
         if 'EDITOR' not in os.environ:
             log.error("set EDITOR in environment in order to edit your jumplist with `jd -e`")
             return 1
-        os.system(f"{os.environ.get('EDITOR')} {_jd_file} </dev/tty >/dev/tty 2>&1")
+        os.system(f"{os.environ.get('EDITOR')} {self._jumplist()} </dev/tty >/dev/tty 2>&1")
+
+    def invoke(self):
+        command = "jump"
+        if self.args.add:
+            command = "add"
+        if self.args.ls:
+            command = "ls"
+        if self.args.edit:
+            command = "edit"
+        func = getattr(self, command)
+        return func()
+
+    def _read_targets(self):
+        log.debug(f"reading {self._jumplist()}")
+        try:
+            jdfile = open(os.path.expanduser(self._jumplist()), "r")
+        except Exception as e:
+            log.warn(e)
+            return []
+        targets = jdfile.readlines()
+        return [target.strip() for target in targets]
+
+    def _jumplist(self):
+        return os.path.join(_jd_dir, "default.jumplist")
 
 
 def main():
     myargs = parser.parse_args()
     _setup(myargs)
-    command = "jump"
-    if myargs.add:
-        command = "add"
-    if myargs.ls:
-        command = "ls"
-    if myargs.edit:
-        command = "edit"
-    func = getattr(Commands, command)
-    return func(myargs)
-
-
-def _read_targets():
-    log.debug(f"reading {_jd_file}")
-    targets = open(os.path.expanduser(_jd_file), "r").readlines()
-    return [target.strip() for target in targets]
+    commands = Commands(myargs)
+    commands.invoke()
 
 
 def _setup(myargs):
@@ -99,8 +111,6 @@ def _check_jddir():
     if not os.path.exists(_jd_dir):
         log.info(f"creating {_jd_dir} directory")
         os.mkdir(_jd_dir)
-    if not os.path.exists(_jd_file):
-        Path(_jd_file).touch()
 
 
 def _check_jdfunc():
