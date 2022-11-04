@@ -28,7 +28,7 @@ class Commands:
             log.info("add entries to jumplist by:")
             log.info("\tjd -a <path>")
             return 0
-        log.info("\n".join(targets))
+        print("\n".join(targets))
 
     def jump(self):
         log.debug(f'target is "{self.args.target}"')
@@ -46,12 +46,12 @@ class Commands:
                 log.info(f"jumping to: {target}")
                 print(f"cd {target}")
                 return 0
-        log.error(f"no match found for {target}")
+        log.error(f"no match found for {self.args.target}")
         return 1
 
     def add(self):
         pth = self.args.target if self.args.target else os.getcwd()
-        log.info(f"adding '{pth}' to jumplist: '{self._jd_file()}'")
+        log.info(f"adding '{pth}' to jumplist: '{self._jumplist()}'")
         fp = open(self._jumplist(), "a")
         if not fp:
             log.error(f"could not open {self._jumplist()} for writing")
@@ -95,7 +95,7 @@ def main():
     myargs = parser.parse_args()
     _setup(myargs)
     commands = Commands(myargs)
-    commands.invoke()
+    return commands.invoke()
 
 
 def _setup(myargs):
