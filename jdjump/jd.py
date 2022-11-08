@@ -3,7 +3,6 @@ import os
 import sys
 import logging as log
 import argparse
-from pathlib import Path
 
 _jd_dir = os.path.expanduser(os.environ.get('JDPATH', "~/.jdjump"))
 
@@ -28,7 +27,8 @@ class Commands:
             log.info("add entries to jumplist by:")
             log.info("\tjd -a <path>")
             return 0
-        print("\n".join(targets))
+        nl = '\\n'
+        print('echo -e ' + nl.join(targets))
 
     def jump(self):
         log.debug(f'target is "{self.args.target}"')
